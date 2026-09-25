@@ -95,6 +95,10 @@ public final class PlayerConfig {
 	private Mode mode = null;
 	private ModeFilter modeFilter = ModeFilter.ALL;
 	/**
+	 * 選曲時に切り替え可能なMODEフィルター。複合フィルターはデフォルトでは含めない。
+	 */
+	private ModeFilter[] enabledModeFilters = ModeFilter.defaultFilters();
+	/**
 	 * 選曲時の難易度フィルター
 	 */
 	private DifficultyFilter difficultyFilter = DifficultyFilter.ALL;
@@ -531,6 +535,23 @@ public final class PlayerConfig {
 		return modeFilter;
 	}
 
+	public ModeFilter[] getEnabledModeFilters() {
+		return enabledModeFilters.clone();
+	}
+
+	public void setEnabledModeFilters(ModeFilter[] enabledModeFilters) {
+		this.enabledModeFilters = sanitizeModeFilters(enabledModeFilters);
+	}
+
+	public boolean isModeFilterEnabled(ModeFilter filter) {
+		for (ModeFilter enabledFilter : enabledModeFilters) {
+			if (enabledFilter == filter) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public void setDifficultyFilter(DifficultyFilter difficultyFilter) {
 		this.difficultyFilter = difficultyFilter != null ? difficultyFilter : DifficultyFilter.ALL;
 	}
@@ -920,6 +941,7 @@ public final class PlayerConfig {
 		} else {
 			setModeFilter(modeFilter);
 		}
+		enabledModeFilters = sanitizeModeFilters(enabledModeFilters);
 		setDifficultyFilter(difficultyFilter);
 		musicselectinput = MathUtils.clamp(musicselectinput, 0, 2);
 		lnmode = MathUtils.clamp(lnmode, 0, 2);
@@ -995,6 +1017,19 @@ public final class PlayerConfig {
 				.limit(MAX_TARGET_LIST_ENTRIES)
 				.filter(value -> value != null && !value.isBlank() && value.length() <= 128)
 				.toArray(String[]::new);
+	}
+
+	private static ModeFilter[] sanitizeModeFilters(ModeFilter[] filters) {
+		if (filters == null || filters.length == 0) {
+			return ModeFilter.defaultFilters();
+		}
+		EnumSet<ModeFilter> uniqueFilters = EnumSet.noneOf(ModeFilter.class);
+		for (ModeFilter filter : filters) {
+			if (filter != null) {
+				uniqueFilters.add(filter);
+			}
+		}
+		return uniqueFilters.isEmpty() ? ModeFilter.defaultFilters() : uniqueFilters.toArray(ModeFilter[]::new);
 	}
 
 	private static double clampFinite(double value, double min, double max, double defaultValue) {

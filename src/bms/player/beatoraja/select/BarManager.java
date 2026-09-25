@@ -346,6 +346,9 @@ public final class BarManager {
 				}
 				for(int modeTrialCount = 0, trialModeIndex = modeIndex; modeTrialCount < MusicSelector.MODE.length; modeTrialCount++, trialModeIndex++) {
 					final ModeFilter mode = MusicSelector.MODE[trialModeIndex % MusicSelector.MODE.length];
+					if (!mode.isEnabled(config)) {
+						continue;
+					}
 					Array<Bar> remove = new Array<Bar>();
 					for (Bar b : l) {
 						if(b instanceof SongBar sb && sb.getSongData() != null) {

@@ -8,6 +8,7 @@ import bms.player.beatoraja.play.JudgeAlgorithm;
 import bms.player.beatoraja.play.TargetProperty;
 import bms.player.beatoraja.result.*;
 import bms.player.beatoraja.select.BarSorter;
+import bms.player.beatoraja.select.ModeFilter;
 import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.SkinProperty;
@@ -166,7 +167,7 @@ public class EventFactory {
 	public enum EventType {
 
 		/**
-		 * 次の難易度フィルター(BEGINNER, NORMAL, ...)へ移動
+		 * 次の譜面類似度フィルター(BEGINNER, NORMAL, ...)へ移動
 		 */
 		difficulty(10, (state, arg1) -> {
 			if(state instanceof MusicSelector selector) {
@@ -183,10 +184,8 @@ public class EventFactory {
 		 */
 		mode(11, (state, arg1) -> {
 			if(state instanceof MusicSelector selector) {
-				int mode = 0;
 				PlayerConfig config = selector.resource.getPlayerConfig();
-				for(;mode < MusicSelector.MODE.length && MusicSelector.MODE[mode] != config.getModeFilter();mode++);
-				config.setModeFilter(MusicSelector.MODE[(mode + (arg1 >= 0 ? 1 : MusicSelector.MODE.length - 1)) % MusicSelector.MODE.length]);
+				config.setModeFilter(ModeFilter.nextEnabled(config.getModeFilter(), config, arg1));
 				selector.getBarManager().updateBar();
 				selector.play(OPTION_CHANGE);
 			}

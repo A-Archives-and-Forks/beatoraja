@@ -1,5 +1,6 @@
 package bms.player.beatoraja.select;
 
+import bms.player.beatoraja.PlayerConfig;
 import bms.model.Mode;
 
 /**
@@ -18,6 +19,17 @@ public enum ModeFilter {
 	KEYBOARD_24K_DOUBLE("48KEY", 7, Mode.KEYBOARD_24K_DOUBLE),
 	BEAT_5K_7K("SINGLE", 8, Mode.BEAT_5K, Mode.BEAT_7K),
 	BEAT_10K_14K("DOUBLE", 9, Mode.BEAT_10K, Mode.BEAT_14K);
+
+	private static final ModeFilter[] DEFAULT_FILTERS = {
+			ALL,
+			BEAT_7K,
+			BEAT_14K,
+			POPN_9K,
+			BEAT_5K,
+			BEAT_10K,
+			KEYBOARD_24K,
+			KEYBOARD_24K_DOUBLE
+	};
 
 	private final String displayName;
 	private final int skinNumber;
@@ -51,6 +63,27 @@ public enum ModeFilter {
 			}
 		}
 		return false;
+	}
+
+	public boolean isEnabled(PlayerConfig config) {
+		return config.isModeFilterEnabled(this);
+	}
+
+	public static ModeFilter nextEnabled(ModeFilter current, PlayerConfig config, int direction) {
+		ModeFilter[] filters = values();
+		int index = current != null ? current.ordinal() : ALL.ordinal();
+		int step = direction >= 0 ? 1 : filters.length - 1;
+		for (int count = 1; count <= filters.length; count++) {
+			ModeFilter filter = filters[(index + step * count) % filters.length];
+			if (filter.isEnabled(config)) {
+				return filter;
+			}
+		}
+		return ALL;
+	}
+
+	public static ModeFilter[] defaultFilters() {
+		return DEFAULT_FILTERS.clone();
 	}
 
 	public static ModeFilter fromMode(Mode mode) {
